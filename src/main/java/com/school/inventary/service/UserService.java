@@ -1,4 +1,3 @@
-
 package com.school.inventary.service;
 
 import com.school.inventary.dto.UserRequestDto;
@@ -38,7 +37,7 @@ public class UserService {
             UserRequestDto request,
             int role
     ) {
-        String email = request.getEmail().trim();
+        String email = request.getEmail().trim().toLowerCase();
 
         UserEntity existingUser = userRepository
                 .findByEmail(email)
@@ -65,6 +64,15 @@ public class UserService {
             );
         }
 
+        String phone = request.getPhoneNumber() != null ? request.getPhoneNumber().trim() : null;
+        if (phone != null && !phone.isBlank()) {
+            if (userRepository.existsByPhoneNumber(phone)) {
+                throw new IllegalArgumentException(
+                        "An account with this mobile number already exists."
+                );
+            }
+        }
+
         UserEntity user = new UserEntity();
 
         user.setMasterId(
@@ -74,9 +82,9 @@ public class UserService {
                         .toUpperCase()
         );
 
-        user.setName(request.getName());
-        user.setSchoolName(request.getSchoolName());
-        user.setPhoneNumber(request.getPhoneNumber());
+        user.setName(request.getName().trim());
+        user.setSchoolName(request.getSchoolName().trim());
+        user.setPhoneNumber(phone);
         user.setEmail(email);
 
         user.setPassword(
@@ -89,7 +97,7 @@ public class UserService {
         // All newly registered accounts require approval.
         user.setStatus(0);
 
-        user.setAddress(request.getAddress());
+        user.setAddress(request.getAddress() != null ? request.getAddress().trim() : null);
 
         UserEntity savedUser = userRepository.save(user);
 
@@ -99,7 +107,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponseDto getUserByEmail(String email) {
 
-        UserEntity user = userRepository.findByEmail(email)
+        UserEntity user = userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() ->
                         new IllegalArgumentException("User not found"));
 

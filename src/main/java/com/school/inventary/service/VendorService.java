@@ -1,4 +1,3 @@
-
 package com.school.inventary.service;
 
 import com.school.inventary.dto.VendorRequestDto;
@@ -37,6 +36,29 @@ public class VendorService {
 
         String vendorName = request.getVendorName().trim();
         String phoneNo = request.getPhoneNo().trim();
+
+        if (!phoneNo.matches("^[0-9]{10}$")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Mobile number must contain exactly 10 digits without alphabets or special characters"
+            );
+        }
+
+        // Check duplicate phone
+        if (vendorRepository.existsByMasterIdAndPhoneNoAndStatus(masterId, phoneNo, 1)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "This mobile number already exists for a vendor in your school"
+            );
+        }
+
+        // Check duplicate vendor name
+        if (vendorRepository.existsByMasterIdAndVendorNameIgnoreCaseAndStatus(masterId, vendorName, 1)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "A vendor with this name already exists in your school"
+            );
+        }
 
         String gstNo = request.getGstNo() == null
                 ? null
@@ -116,7 +138,6 @@ public class VendorService {
         return user;
     }
 
-
     @Transactional
     public VendorResponseDto updateVendor(
             String vendorId,
@@ -149,6 +170,29 @@ public class VendorService {
                 ? null
                 : request.getPhoneNo().trim();
 
+        if (phoneNo == null || !phoneNo.matches("^[0-9]{10}$")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Mobile number must contain exactly 10 digits without alphabets or special characters"
+            );
+        }
+
+        // Check duplicate phone for other vendor
+        if (vendorRepository.existsByMasterIdAndPhoneNoAndStatusAndVendorIdNot(masterId, phoneNo, 1, vendorId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "This mobile number already exists for another vendor in your school"
+            );
+        }
+
+        // Check duplicate vendor name for other vendor
+        if (vendorRepository.existsByMasterIdAndVendorNameIgnoreCaseAndStatusAndVendorIdNot(masterId, vendorName, 1, vendorId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "A vendor with this name already exists in your school"
+            );
+        }
+
         String gstNo = request.getGstNo() == null
                 ? null
                 : request.getGstNo().trim().toUpperCase(
@@ -156,13 +200,6 @@ public class VendorService {
 
         if (gstNo != null && gstNo.isBlank()) {
             gstNo = null;
-        }
-
-        if (phoneNo == null || !phoneNo.matches("^[6-9][0-9]{9}$")) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Enter a valid 10-digit Indian mobile number"
-            );
         }
 
         if (gstNo != null &&
@@ -199,7 +236,6 @@ public class VendorService {
 
         return mapToResponse(updatedVendor);
     }
-
 
     // Entity to response DTO
     private VendorResponseDto mapToResponse(VendorEntity vendor) {

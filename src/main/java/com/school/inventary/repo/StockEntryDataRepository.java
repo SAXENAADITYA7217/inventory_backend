@@ -18,4 +18,6 @@ public interface StockEntryDataRepository extends JpaRepository<StockEntryDataEn
             String productId
     );
 
+
+
 }

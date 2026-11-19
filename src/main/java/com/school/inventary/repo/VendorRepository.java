@@ -1,4 +1,3 @@
-
 package com.school.inventary.repo;
 
 import com.school.inventary.entity.VendorEntity;
@@ -21,16 +20,41 @@ public interface VendorRepository
             Integer status
     );
 
-    Optional<VendorEntity> findByMasterIdAndVendorId(
-            String masterId,
-            String vendorId
-    );
-
-
     boolean existsByMasterIdAndGstNoIgnoreCaseAndStatusAndVendorIdNot(
             String masterId,
             String gstNo,
             Integer status,
+            String vendorId
+    );
+
+    boolean existsByMasterIdAndPhoneNoAndStatus(
+            String masterId,
+            String phoneNo,
+            Integer status
+    );
+
+    boolean existsByMasterIdAndPhoneNoAndStatusAndVendorIdNot(
+            String masterId,
+            String phoneNo,
+            Integer status,
+            String vendorId
+    );
+
+    boolean existsByMasterIdAndVendorNameIgnoreCaseAndStatus(
+            String masterId,
+            String vendorName,
+            Integer status
+    );
+
+    boolean existsByMasterIdAndVendorNameIgnoreCaseAndStatusAndVendorIdNot(
+            String masterId,
+            String vendorName,
+            Integer status,
+            String vendorId
+    );
+
+    Optional<VendorEntity> findByMasterIdAndVendorId(
+            String masterId,
             String vendorId
     );
 
@@ -41,5 +65,4 @@ public interface VendorRepository
     );
 
     List<VendorEntity> findByMasterIdOrderByCreatedAtDesc(String masterId);
-
 }

@@ -1,4 +1,3 @@
-
 package com.school.inventary.repo;
 
 import com.school.inventary.entity.UserEntity;
@@ -12,11 +11,11 @@ public interface UserRepository
 
     Optional<UserEntity> findByEmail(String email);
 
-
     Optional<UserEntity> findByMasterId(String masterId);
 
-
     boolean existsByEmail(String email);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 
     boolean existsByMasterId(String masterId);
 

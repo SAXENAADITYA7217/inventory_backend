@@ -3,10 +3,10 @@ package com.school.inventary.controller;
 import com.school.inventary.dto.ProductRequestDto;
 import com.school.inventary.dto.ProductResponseDto;
 import com.school.inventary.service.ProductService;
-
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,9 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/school/products")
@@ -26,6 +28,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final ObjectMapper objectMapper;
+    private final Validator validator;
 
     // =========================================
     // ADD MULTIPLE PRODUCTS WITH IMAGES
@@ -54,6 +57,16 @@ public class ProductController {
                     ProductRequestDto.class
             );
             requests = List.of(single);
+        }
+
+        // Programmatic Bean Validation for multipart JSON payloads
+        Set<ConstraintViolation<ProductRequestDto>> allViolations = new HashSet<>();
+        for (ProductRequestDto req : requests) {
+            Set<ConstraintViolation<ProductRequestDto>> violations = validator.validate(req);
+            allViolations.addAll(violations);
+        }
+        if (!allViolations.isEmpty()) {
+            throw new ConstraintViolationException(allViolations);
         }
 
         return productService.addMultipleProducts(
@@ -124,6 +137,11 @@ public class ProductController {
                         productJson,
                         ProductRequestDto.class
                 );
+
+        Set<ConstraintViolation<ProductRequestDto>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
 
         return productService.updateProduct(
                 productId,

@@ -18,4 +18,10 @@ public interface StockEntryRepository extends JpaRepository<StockEntryEntity, Lo
 
     Boolean existsByMasterIdAndStockId(String masterId, String stockId);
 
+    boolean existsByMasterIdAndVendorIdAndInvoiceNoIgnoreCaseAndStatus(
+            String masterId,
+            String vendorId,
+            String invoiceNo,
+            Integer status
+    );
 }

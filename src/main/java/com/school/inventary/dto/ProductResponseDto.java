@@ -4,6 +4,7 @@ package com.school.inventary.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -30,6 +31,8 @@ public class ProductResponseDto {
     private Integer minQuantity;
 
     private String rackDetail;
+
+    private BigDecimal sellingPrice;
 
     // 1 = ACTIVE, 0 = INACTIVE
     private Integer status;

@@ -1,11 +1,6 @@
 package com.school.inventary.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,13 +9,14 @@ import lombok.Setter;
 public class VendorRequestDto {
 
     @NotBlank(message = "Vendor name is required")
-    @Size(max = 150)
+    @Size(min = 2, max = 150, message = "Vendor name must be between 2 and 150 characters")
+    @Pattern(regexp = "^[^<>]+$", message = "Vendor name contains invalid characters")
     private String vendorName;
 
     @NotBlank(message = "Phone number is required")
     @Pattern(
-            regexp = "^[6-9][0-9]{9}$",
-            message = "Enter a valid 10-digit Indian mobile number"
+            regexp = "^[0-9]{10}$",
+            message = "Mobile number must contain exactly 10 digits without alphabets or special characters"
     )
     private String phoneNo;
 
@@ -30,7 +26,7 @@ public class VendorRequestDto {
     )
     private String gstNo;
 
-    @Size(max = 500)
+    @Size(max = 500, message = "Address cannot exceed 500 characters")
     private String address;
 
     @NotNull(message = "Status is required")

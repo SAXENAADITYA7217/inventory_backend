@@ -1,8 +1,8 @@
-
 package com.school.inventary.exception;
 
 import com.school.inventary.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +10,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -74,6 +75,47 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // ConstraintViolationException (e.g., parameter or programmatic validation)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request) {
+
+        String message = ex.getConstraintViolations()
+                .stream()
+                .map(v -> {
+                    String prop = v.getPropertyPath() != null ? v.getPropertyPath().toString() : "";
+                    int lastDot = prop.lastIndexOf('.');
+                    String fieldName = lastDot >= 0 ? prop.substring(lastDot + 1) : prop;
+                    return (!fieldName.isBlank() ? fieldName + ": " : "") + v.getMessage();
+                })
+                .distinct()
+                .collect(Collectors.joining(", "));
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                message.isBlank() ? "Validation failed" : message,
+                request
+        );
+    }
+
+    // Type mismatch for PathVariable / RequestParam
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request) {
+
+        String message = String.format("Parameter '%s' has invalid value: '%s'",
+                ex.getName(),
+                ex.getValue());
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                message,
+                request
+        );
+    }
+
     // Invalid JSON or request body
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidBody(
@@ -108,7 +150,7 @@ public class GlobalExceptionHandler {
 
         return buildError(
                 HttpStatus.CONFLICT,
-                "This operation conflicts with existing data",
+                "This operation conflicts with existing data or violates unique constraint",
                 request
         );
     }
@@ -134,7 +176,7 @@ public class GlobalExceptionHandler {
 
         return buildError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred",
+                "An unexpected error occurred: " + (ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName()),
                 request
         );
     }

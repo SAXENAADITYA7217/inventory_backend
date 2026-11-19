@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -327,6 +328,14 @@ public class ProductService {
                     "Minimum quantity must be zero or greater"
             );
         }
+
+        if (request.getSellingPrice() == null
+                || request.getSellingPrice().compareTo(BigDecimal.ZERO) < 0) {
+
+            throw new IllegalArgumentException(
+                    "Selling price is required and cannot be negative");
+        }
+
     }
 
     private void validateImageIndex(
@@ -421,6 +430,9 @@ public class ProductService {
         product.setProductDescription(request.getProductDescription());
         product.setMinQuantity(request.getMinQuantity());
         product.setRackDetail(request.getRackDetail());
+
+        // New selling price
+        product.setSellingPrice(request.getSellingPrice());
     }
 
     // =========================================
@@ -495,6 +507,7 @@ public class ProductService {
                 .productDescription(product.getProductDescription())
                 .minQuantity(product.getMinQuantity())
                 .rackDetail(product.getRackDetail())
+                .sellingPrice(product.getSellingPrice())
                 .status(product.getStatus())
                 .createdAt(product.getCreatedAt())
                 .build();

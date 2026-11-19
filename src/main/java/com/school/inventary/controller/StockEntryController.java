@@ -3,6 +3,7 @@ package com.school.inventary.controller;
 
 import com.school.inventary.dto.StockEntryRequestDto;
 import com.school.inventary.dto.StockEntryResponseDto;
+import com.school.inventary.dto.StockEntryUpdateRequestDto;
 import com.school.inventary.service.StockEntryService;
 
 import jakarta.validation.Valid;
@@ -92,4 +93,22 @@ public class StockEntryController {
 
         return ResponseEntity.ok(response);
     }
+
+
+    @PutMapping("/{stockId}")
+    public ResponseEntity<StockEntryResponseDto> updateStockEntry(
+            @PathVariable String stockId,
+            @Valid @RequestBody StockEntryUpdateRequestDto request,
+            Authentication authentication) {
+
+        StockEntryResponseDto response =
+                stockEntryService.updateStockEntry(
+                        stockId,
+                        request,
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
 }
